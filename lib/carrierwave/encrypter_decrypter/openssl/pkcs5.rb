@@ -30,17 +30,23 @@ module Openssl
         encrypted_file_path = File.expand_path(obj.store_path, obj.root) + ".enc"
         model.save!
 
-
-        buf = ""
-        File.open(encrypted_file_path, "wb") do |outf|
-          File.open(model.send(mounted_as).path, "rb") do |inf|
-            while inf.read(4096, buf)
-              outf << cipher.update(buf)
+        if Carrierwave::EncrypterDecrypter::StorageHelper.fog_storage?(obj)
+          content = obj.file.read
+          encrypted_data = cipher.update(content) + cipher.final
+          Carrierwave::EncrypterDecrypter::StorageHelper.fog_write(obj, obj.store_path + '.enc', encrypted_data)
+          obj.file.delete
+        else
+          buf = ""
+          File.open(encrypted_file_path, "wb") do |outf|
+            File.open(model.send(mounted_as).path, "rb") do |inf|
+              while inf.read(4096, buf)
+                outf << cipher.update(buf)
+              end
+              outf << cipher.final
             end
-            outf << cipher.final
           end
+          File.unlink(model.send(mounted_as).path)
         end
-        File.unlink(model.send(mounted_as).path)
       rescue Exception => e
         puts "****************************#{e.message}"
         puts "****************************#{e.backtrace.inspect}"
@@ -67,17 +73,24 @@ module Openssl
         key = OpenSSL::PKCS5.pbkdf2_hmac(pwd, salt, iter, key_len, digest)
         cipher.key = key
 
-        original_file_path =  obj.send(mounted_as).root + obj.send(mounted_as).url
-        encrypted_file_path =  obj.send(mounted_as).root + obj.send(mounted_as).url  + ".enc"
+        uploader = obj.send(mounted_as)
 
-        buf = ""
+        if Carrierwave::EncrypterDecrypter::StorageHelper.fog_storage?(uploader)
+          encrypted_data = Carrierwave::EncrypterDecrypter::StorageHelper.fog_read(uploader, uploader.store_path + '.enc')
+          decrypted_data = cipher.update(encrypted_data) + cipher.final
+          Carrierwave::EncrypterDecrypter::StorageHelper.fog_write(uploader, uploader.store_path, decrypted_data)
+        else
+          original_file_path = obj.send(mounted_as).root + obj.send(mounted_as).url
+          encrypted_file_path = obj.send(mounted_as).root + obj.send(mounted_as).url + ".enc"
 
-        File.open(original_file_path, "wb") do |outf|
-          File.open(encrypted_file_path, "rb") do |inf|
-            while inf.read(4096, buf)
-              outf << cipher.update(buf)
+          buf = ""
+          File.open(original_file_path, "wb") do |outf|
+            File.open(encrypted_file_path, "rb") do |inf|
+              while inf.read(4096, buf)
+                outf << cipher.update(buf)
+              end
+              outf << cipher.final
             end
-            outf << cipher.final
           end
         end
       rescue Exception => e
