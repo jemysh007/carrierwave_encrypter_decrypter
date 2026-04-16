@@ -40,7 +40,7 @@ module Carrierwave
               public: fog_public(uploader)
             )
           elsif aws_storage?(uploader)
-            aws_object(uploader, key).put({ body: data }.merge(aws_write_options(uploader)))
+            aws_object(uploader, key).put(aws_write_options(uploader).merge(body: data))
           else
             raise "Unsupported remote storage for write: #{storage_class(uploader)}"
           end
@@ -84,7 +84,7 @@ module Carrierwave
 
           object = file.file
           unless object.is_a?(::Aws::S3::Object)
-            raise "Unsupported AWS file object: #{object.class}"
+            raise "Unsupported AWS file object: #{object.class}. Expected Aws::S3::Object from carrierwave-aws storage."
           end
 
           object.bucket.object(key)
