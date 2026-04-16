@@ -97,7 +97,7 @@ rake db:migrate
 
 **File Encryption**
 
-The File encryption will happen with `Carrierwave::EncrypterDecrypter::Uploader.encrypt(self)` once the file is uploaded you will find it with a extendion of `.enc` (works for local, fog and AWS S3 storage backends).
+The File encryption will happen with `Carrierwave::EncrypterDecrypter::Uploader.encrypt(self)` once the file is uploaded you will find it with a extension of `.enc` (works for local, fog and AWS S3 storage backends).
 
 
 **File Decryption**

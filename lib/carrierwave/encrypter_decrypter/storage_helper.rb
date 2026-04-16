@@ -40,7 +40,7 @@ module Carrierwave
               public: fog_public(uploader)
             )
           elsif aws_storage?(uploader)
-            aws_object(uploader, key).put(body: data)
+            aws_object(uploader, key).put({ body: data }.merge(aws_write_options(uploader)))
           else
             raise "Unsupported remote storage for write: #{storage_class(uploader)}"
           end
@@ -51,7 +51,8 @@ module Carrierwave
             file = fog_directory(uploader).files.get(key)
             file.destroy if file
           elsif aws_storage?(uploader)
-            aws_object(uploader, key).delete
+            file = aws_object(uploader, key)
+            file.delete if file.exists?
           else
             raise "Unsupported remote storage for delete: #{storage_class(uploader)}"
           end
@@ -88,6 +89,14 @@ module Carrierwave
           end
 
           object.bucket.object(key)
+        end
+
+        def aws_write_options(uploader)
+          return {} unless uploader.class.respond_to?(:aws_acl)
+          acl = uploader.class.aws_acl
+          acl.nil? ? {} : { acl: acl }
+        rescue
+          {}
         end
       end
     end
