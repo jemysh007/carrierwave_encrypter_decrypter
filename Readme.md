@@ -4,6 +4,8 @@
 
 A Rubygem to secure the file uploaded by encrypting the file later on decrypting when needed.  Completely secure and depends on Ruby 2.0.0 OpenSSL::Cipher and OpenSSL::PKCS5
 
+Supports CarrierWave local file storage, fog storage, and AWS S3 storage via `carrierwave-aws`.
+
 You can find a [Sample application with usage here](https://github.com/ankit8898/carrierwave_encrypter_decrypter_example).
 
 **OpenSSL::Cipher**
@@ -95,7 +97,7 @@ rake db:migrate
 
 **File Encryption**
 
-The File encryption will happen with `Carrierwave::EncrypterDecrypter::Uploader.encrypt(self)` once the file is uploaded you will find it with a extendion of `.enc`
+The File encryption will happen with `Carrierwave::EncrypterDecrypter::Uploader.encrypt(self)` once the file is uploaded you will find it with a extension of `.enc` (works for local, fog and AWS S3 storage backends).
 
 
 **File Decryption**
