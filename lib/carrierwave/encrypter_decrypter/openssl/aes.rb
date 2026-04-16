@@ -12,11 +12,11 @@ module Openssl
         model.key = key
         model.save!
 
-        if Carrierwave::EncrypterDecrypter::StorageHelper.fog_storage?(obj)
+        if Carrierwave::EncrypterDecrypter::StorageHelper.remote_storage?(obj)
           content = obj.file.read
           encrypted_data = cipher.update(content) + cipher.final
-          Carrierwave::EncrypterDecrypter::StorageHelper.fog_write(obj, obj.store_path + '.enc', encrypted_data)
-          obj.file.delete
+          Carrierwave::EncrypterDecrypter::StorageHelper.write(obj, obj.store_path + '.enc', encrypted_data)
+          Carrierwave::EncrypterDecrypter::StorageHelper.delete(obj, obj.store_path)
         else
           original_file_path = File.expand_path(obj.store_path, obj.root)
           encrypted_file_path = File.expand_path(obj.store_path, obj.root) + ".enc"
@@ -48,10 +48,10 @@ module Openssl
 
         uploader = obj.send(mounted_as)
 
-        if Carrierwave::EncrypterDecrypter::StorageHelper.fog_storage?(uploader)
-          encrypted_data = Carrierwave::EncrypterDecrypter::StorageHelper.fog_read(uploader, uploader.store_path + '.enc')
+        if Carrierwave::EncrypterDecrypter::StorageHelper.remote_storage?(uploader)
+          encrypted_data = Carrierwave::EncrypterDecrypter::StorageHelper.read(uploader, uploader.store_path + '.enc')
           decrypted_data = cipher.update(encrypted_data) + cipher.final
-          Carrierwave::EncrypterDecrypter::StorageHelper.fog_write(uploader, uploader.store_path, decrypted_data)
+          Carrierwave::EncrypterDecrypter::StorageHelper.write(uploader, uploader.store_path, decrypted_data)
         else
           buf = ""
           original_file_path = obj.send(mounted_as).root + obj.send(mounted_as).url
