@@ -34,7 +34,7 @@ module Openssl
           content = obj.file.read
           encrypted_data = cipher.update(content) + cipher.final
           Carrierwave::EncrypterDecrypter::StorageHelper.write(obj, obj.store_path + '.enc', encrypted_data)
-          Carrierwave::EncrypterDecrypter::StorageHelper.delete(obj, obj.store_path)
+          obj.file.delete
         else
           buf = ""
           File.open(encrypted_file_path, "wb") do |outf|
