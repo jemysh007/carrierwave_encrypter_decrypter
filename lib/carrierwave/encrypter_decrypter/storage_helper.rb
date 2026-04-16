@@ -28,7 +28,7 @@ module Carrierwave
           elsif aws_storage?(uploader)
             aws_object(uploader, key).get.body.read
           else
-            raise "Unsupported remote storage for read: #{storage_class(uploader)}"
+            raise "Internal error: unsupported remote storage for read: #{storage_class(uploader)}"
           end
         end
 
@@ -42,7 +42,7 @@ module Carrierwave
           elsif aws_storage?(uploader)
             aws_object(uploader, key).put(aws_write_options(uploader).merge(body: data))
           else
-            raise "Unsupported remote storage for write: #{storage_class(uploader)}"
+            raise "Internal error: unsupported remote storage for write: #{storage_class(uploader)}"
           end
         end
 
@@ -53,7 +53,7 @@ module Carrierwave
           elsif aws_storage?(uploader)
             aws_object(uploader, key).delete
           else
-            raise "Unsupported remote storage for delete: #{storage_class(uploader)}"
+            raise "Internal error: unsupported remote storage for delete: #{storage_class(uploader)}"
           end
         end
 
