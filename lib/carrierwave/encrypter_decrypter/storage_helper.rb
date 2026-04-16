@@ -51,8 +51,7 @@ module Carrierwave
             file = fog_directory(uploader).files.get(key)
             file.destroy if file
           elsif aws_storage?(uploader)
-            file = aws_object(uploader, key)
-            file.delete if file.exists?
+            aws_object(uploader, key).delete
           else
             raise "Unsupported remote storage for delete: #{storage_class(uploader)}"
           end
